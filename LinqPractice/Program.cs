@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace LinqPractice
 {
@@ -99,12 +101,12 @@ namespace LinqPractice
             }
 
             //Find employees who have been working for more than 5 years.
-            Console.WriteLine("Find employees who have been working for more than 5 years");
+            //Console.WriteLine("Find employees who have been working for more than 5 years");
             var fiveYearsAgo = DateTime.Now.AddYears(-5);
-            
+
             //Normal Way
             //data = employees.Where(x => x.JoiningDate < fiveYearsAgo).Select(y => GetEmployee(y));
-            
+
             //Passing Predicate
             Func<Employee, bool> validateJoiningDate = (employee) => employee.JoiningDate < fiveYearsAgo;
             data = employees.Where(x => validateJoiningDate(x)).Select(y => GetEmployee(y));
@@ -144,7 +146,7 @@ namespace LinqPractice
                 (
                     grp => new { _groupName = grp.Key, _totalSalary = grp.Sum(p => p.Salary) }
                 )
-                .Where(grp => grp._totalSalary > 150000); 
+                .Where(grp => grp._totalSalary > 150000);
             foreach (var item in g5)
             {
                 //Console.WriteLine($"{item._groupName}: {item._totalSalary}");
@@ -183,8 +185,69 @@ namespace LinqPractice
             foreach (var item in joindData)
             {
                 //Console.WriteLine($"{item.Name} - {item.Gender} - {item.EmployeeType}");
-                Console.WriteLine($"{item.genderName} - {item._count}");
+                //Console.WriteLine($"{item.genderName} - {item._count}");
             }
+
+
+            //Retrieve all male employees.
+            var allMales = employees
+                           .Join
+                           (
+                                gender,
+                                e => e.GenderId,
+                                g => g.Id,
+                                (e, g) => new { e, g }
+                           ).Where(joinedTable => joinedTable.e.GenderId == 1)
+                           .Select(x => new { x.e.Name, _gender = x.g.Title });
+            foreach (var item in allMales)
+            {
+                //Console.WriteLine($"{item.Name} - {item._gender}");
+
+            }
+
+
+            //Find the total salary of female employees.
+            var femaleTotalSalary = employees.Where(x => x.GenderId == 2).Sum(y => y.Salary);
+
+
+            //Get the count of male and female employees in each department.
+            var countsInDepartment = employees
+                .GroupBy(x => x.Department)
+                .Select(x => new
+                {
+                    _department = x.Key,
+                    _maleCount = x.Count(p => p.GenderId == 1),
+                    _femaleCount = x.Count(p => p.GenderId == 2)
+                });
+            foreach (var item in countsInDepartment)
+            {
+                //Console.WriteLine($"{item._department}, MaleCount: {item._maleCount}, Fe-MaleCount: {item._femaleCount}");
+            }
+
+
+
+            //Find the average salary of male employees in the "IT" department.
+
+            var averageMaleSalary = employees
+                .Join
+                (
+                    gender,
+                    e => e.GenderId,
+                    g => g.Id,
+                    (e, g) => new { e.Salary, e.Department, _gender = g.Title }
+                )
+                .Where(x => x._gender == "Male")
+                .GroupBy(x => x.Department)
+                .Select(x => new { _departmentName = x.Key, _avgSalary = x.Average(k => k.Salary) });
+            foreach (var item in averageMaleSalary)
+            {
+                Console.WriteLine($"{item._departmentName} - {item._avgSalary}");
+            }
+
+
+            //Count how many male and female employees have salaries greater than 60,000.
+            //var counts = employees.
+
             #endregion
 
         }
