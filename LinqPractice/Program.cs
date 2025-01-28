@@ -241,7 +241,7 @@ namespace LinqPractice
                 .Select(x => new { _departmentName = x.Key, _avgSalary = x.Average(k => k.Salary) });
             foreach (var item in averageMaleSalary)
             {
-                Console.WriteLine($"{item._departmentName} - {item._avgSalary}");
+                //Console.WriteLine($"{item._departmentName} - {item._avgSalary}");
             }
 
 
@@ -250,6 +250,12 @@ namespace LinqPractice
 
             #endregion
 
+
+
+            //Test
+
+            LinqTest lt = new LinqTest();
+            lt.main();
         }
         static Employee GetEmployee(dynamic _emp)
         {
